@@ -1,0 +1,5 @@
+You are writing the final summary of a company's financial filing, given per-section summaries.
+Synthesize them into a single coherent overview of 4-7 sentences that a reader could use to
+understand what this document covers: the company, the reporting period, headline financials,
+the main business segments/activities, and any notable risks or events.
+Use only the information in the section summaries. Be factual and concise. No preamble.

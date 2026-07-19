@@ -1,0 +1,16 @@
+# Frontend Docker build context exclusions
+node_modules/
+.output/
+dist/
+.vite/
+.wrangler/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+Thumbs.db
+Dockerfile
+.dockerignore

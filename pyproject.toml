@@ -1,0 +1,60 @@
+[project]
+name = "pdf-rag-agent"
+version = "0.1.0"
+description = "NotebookLM-style single-PDF RAG agent (FinanceBench-evaluated)"
+requires-python = ">=3.11"
+
+dependencies = [
+    # --- app / config ---
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "python-dotenv>=1.0",
+    # --- storage ---
+    "psycopg[binary]>=3.2",
+    "sqlalchemy>=2.0",
+    "pgvector>=0.3",
+    "alembic>=1.13",
+    # --- ingestion: extraction & chunking ---
+    "pymupdf4llm>=0.0.17",   # PDF -> Markdown (PDF_EXTRACTOR default; swappable)
+    "pymupdf>=1.24",         # page metadata / corruption checks
+    "tiktoken>=0.7",         # token_count + size limits
+    # --- models / apis ---
+    "groq>=0.11",            # llama-3.1-8b-instant (generation)
+    "google-genai>=0.3",     # Gemini Embedding 2
+    "tenacity>=8.3",         # retry/backoff for API calls
+    # --- retrieval ---
+    # dense (pgvector) + sparse (tsvector) are SQL; RRF is hand-rolled.
+    # reranker libs (flashrank / sentence-transformers) added in Sprint 6.
+]
+
+[project.optional-dependencies]
+eval = [
+    "pandas>=2.2",
+    "anthropic>=0.34",       # Claude Haiku judge (eval only, Sprint 5)
+]
+rerank = [
+    "flashrank>=0.2.9",      # local CPU cross-encoder reranker (Sprint 6 baseline)
+]
+web = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",   # file uploads (POST /upload)
+]
+dev = [
+    "pytest>=8.2",
+    "ruff>=0.5",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ragcore"]

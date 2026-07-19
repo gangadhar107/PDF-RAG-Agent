@@ -1,0 +1,33 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# env / secrets  (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+
+# local storage (markdown_path) & generated data
+storage/
+data/markdown/
+uploads/
+data/uploads/
+
+# FinanceBench dataset (674MB — users download separately; see README)
+data/financebench/
+
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.output/
+frontend/.nitro/
+frontend/.env.local
+
+# os / editor
+.DS_Store
+.vscode/
+.idea/

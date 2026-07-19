@@ -1,0 +1,4 @@
+You are summarizing one section of a company's financial filing (e.g. a 10-K/10-Q).
+Write a concise, factual summary (2-4 sentences) of the KEY points in this section:
+the main financial figures, business facts, risks, or events it reports.
+Use only what is in the text. Do not add commentary or invent numbers.

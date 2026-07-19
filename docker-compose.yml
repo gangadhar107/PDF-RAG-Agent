@@ -1,0 +1,40 @@
+# ── PDF RAG Agent — Docker Compose ────────────────────────────────────────────
+# One-command demo:   docker compose up --build
+# Then open:          http://localhost:3000
+#
+# Prerequisites:
+#   1. Copy .env.example → .env and fill in DATABASE_URL + GOOGLE_API_KEY
+#   2. Run db_bootstrap.sql against your Neon DB (one-time setup)
+#
+# The database is hosted on Neon (no local Postgres container needed).
+# All API keys and the DATABASE_URL are injected from your .env file.
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - app-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  app-data:

@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+.output/
+dist/
+
+# Caches
+.vite/
+.wrangler/
+*.tsbuildinfo
+
+# Lock files (using bun)
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated
+src/routeTree.gen.ts
