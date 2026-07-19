@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # --- secrets / connection ---
     database_url: str = Field(..., alias="DATABASE_URL")
-    groq_api_key: str = Field(..., alias="GROQ_API_KEY")
+    groq_api_key: str | None = Field(None, alias="GROQ_API_KEY")
     google_api_key: str | None = Field(None, alias="GOOGLE_API_KEY")   # Sprint 3 blocker if unset
     anthropic_api_key: str | None = Field(None, alias="ANTHROPIC_API_KEY")  # eval-only
 
