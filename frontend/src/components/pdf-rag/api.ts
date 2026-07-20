@@ -130,3 +130,17 @@ export async function fetchSummary(
   if (!res.ok) throw new Error("Summary fetch failed");
   return res.json();
 }
+
+export async function fetchStatus(
+  docId: string,
+): Promise<{
+  doc_id: string;
+  status: string;
+  filename: string;
+  error_message: string | null;
+  summary_status: string;
+}> {
+  const res = await fetch(`${API}/status/${docId}`);
+  if (!res.ok) throw new Error("Status fetch failed");
+  return res.json();
+}

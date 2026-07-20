@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   askQuestionStream,
+  fetchStatus,
   fetchSummary,
   subscribeEvents,
   uploadPdf,
@@ -30,7 +31,48 @@ export function usePdfRag() {
 
   const cleanupRef = useRef<(() => void) | null>(null);
 
-  // Poll for summary if not yet loaded when in chat or processing state
+  // Fallback status polling: if SSE disconnects or is missed, ensure we move to chat when ready
+  useEffect(() => {
+    if (!docId || state !== "processing") return;
+
+    let isMounted = true;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const pollStatus = async () => {
+      try {
+        const res = await fetchStatus(docId);
+        if (!isMounted) return;
+        if (res.status === "ready") {
+          setStages((prev) =>
+            prev.map((s) => ({
+              ...s,
+              status: s.key === "ready" ? "completed" : s.status === "pending" ? "completed" : s.status,
+            })),
+          );
+          setState("chat");
+          return;
+        }
+        if (res.status === "failed") {
+          setUploadError(res.error_message ?? "Ingestion failed.");
+          return;
+        }
+        timer = setTimeout(pollStatus, 3000);
+      } catch {
+        if (isMounted) {
+          timer = setTimeout(pollStatus, 4000);
+        }
+      }
+    };
+
+    timer = setTimeout(pollStatus, 3000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [docId, state]);
+
+  // Poll for summary if not yet loaded
   useEffect(() => {
     if (!docId) return;
     if (summary) return; // already loaded
