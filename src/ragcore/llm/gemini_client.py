@@ -25,6 +25,7 @@ from tenacity import (
     retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
+    wait_random_exponential,
 )
 
 from ragcore.config import settings
@@ -43,7 +44,7 @@ class QuotaExhaustedError(Exception):
 @retry(
     retry=retry_if_exception_type(genai_errors.ClientError),
     stop=stop_after_attempt(5),
-    wait=wait_exponential(min=2, max=60),
+    wait=wait_random_exponential(min=2, max=60),
     reraise=True,
 )
 def _embed_call(text: str, task_type: str) -> list[float]:

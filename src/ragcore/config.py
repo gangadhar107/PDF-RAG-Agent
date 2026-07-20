@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     # --- embeddings ---
     embed_dim: int = 1536                 # LOCKED — matches VECTOR(1536); permanent
     embed_max_input_tokens: int = 8192    # D3 CONFIRMED from API (gemini-embedding-2 inputTokenLimit)
-    embed_concurrency: int = 10           # parallel embed calls (billing enabled → higher throughput)
+    embed_concurrency: int = 5            # # ponytail: 5 workers fits within Gemini Free Tier (15 RPM) rate limits without triggering 429s
 
     # --- ingestion ---
     pdf_extractor: str = Field("pymupdf4llm", alias="PDF_EXTRACTOR")   # swappable

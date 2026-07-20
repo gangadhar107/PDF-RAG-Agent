@@ -126,7 +126,7 @@ def ingest(
         return doc_id
 
     except QuotaExhaustedError as e:
-        _fail("embedding", str(e), status_val="processing")  # resumable, not a hard fail
+        _fail("embedding", str(e), status_val="failed")  # # ponytail: resumable on retry, set failed so frontend poller stops
         raise
     except EmptyDocumentError as e:
         _fail("extracting", str(e))

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -68,7 +68,9 @@ def embed_document(session: Session, doc_id: uuid.UUID,
 
     done = 0
     with ThreadPoolExecutor(max_workers=settings.embed_concurrency) as pool:
-        for chunk_id, vector in pool.map(_embed, chunks):
+        futures = [pool.submit(_embed, c) for c in chunks]
+        for fut in as_completed(futures):
+            chunk_id, vector = fut.result()
             session.get(Chunk, chunk_id).embedding = vector
             done += 1
             if done % _COMMIT_EVERY == 0:

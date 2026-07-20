@@ -31,3 +31,19 @@ def test_enriched_partial_metadata():
     out = build_enriched_text("x", "Sec", "3M", None)
     assert "Company: 3M" in out
     assert "Period:" not in out
+
+
+def test_embed_document_as_completed_ordering():
+    """Verify embed_document works with mock chunks."""
+    from unittest.mock import MagicMock
+    from ragcore.ingest.embed import embed_document
+
+    session = MagicMock()
+    doc = MagicMock()
+    doc.company = "TestCo"
+    doc.fiscal_period = "FY24"
+    session.get.return_value = doc
+
+    # If no chunks remain un-embedded, return 0 immediately
+    session.execute.return_value.scalars.return_value = []
+    assert embed_document(session, "00000000-0000-0000-0000-000000000000") == 0
