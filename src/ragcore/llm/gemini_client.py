@@ -67,8 +67,7 @@ def embed_one(text: str, task_type: str) -> list[float]:
     except genai_errors.ClientError as e:
         if getattr(e, "code", None) == 429 or "RESOURCE_EXHAUSTED" in str(e):
             raise QuotaExhaustedError(
-                "Gemini embedding quota exhausted (429). Free-tier daily/rate limit hit — "
-                "wait for reset or enable billing."
+                f"Gemini embedding rate/quota limit reached (429). Details: {e}"
             ) from e
         raise
 
