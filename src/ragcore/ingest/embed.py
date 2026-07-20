@@ -9,6 +9,7 @@ for the sparse index). Per-chunk progress is emitted for the §2.2a embedding % 
 
 from __future__ import annotations
 
+import time
 import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -62,13 +63,16 @@ def embed_document(session: Session, doc_id: uuid.UUID,
     if total == 0:
         return 0
 
-    def _embed(chunk: Chunk) -> tuple[uuid.UUID, list[float]]:
+    def _embed(arg: tuple[int, Chunk]) -> tuple[uuid.UUID, list[float]]:
+        idx, chunk = arg
+        if idx < settings.embed_concurrency:
+            time.sleep(idx * 0.05)  # # ponytail: stagger initial thread starts by 50ms to prevent sub-second QPS burst
         text = build_enriched_text(chunk.content, chunk.section, doc.company, doc.fiscal_period)
         return chunk.chunk_id, embed_one(text, TASK_DOCUMENT)
 
     done = 0
     with ThreadPoolExecutor(max_workers=settings.embed_concurrency) as pool:
-        futures = [pool.submit(_embed, c) for c in chunks]
+        futures = [pool.submit(_embed, (i, c)) for i, c in enumerate(chunks)]
         for fut in as_completed(futures):
             chunk_id, vector = fut.result()
             session.get(Chunk, chunk_id).embedding = vector
