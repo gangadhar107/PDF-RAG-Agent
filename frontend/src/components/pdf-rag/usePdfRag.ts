@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   askQuestionStream,
   fetchSummary,
@@ -30,6 +30,41 @@ export function usePdfRag() {
 
   const cleanupRef = useRef<(() => void) | null>(null);
 
+  // Poll for summary if not yet loaded when in chat or processing state
+  useEffect(() => {
+    if (!docId) return;
+    if (summary) return; // already loaded
+
+    let isMounted = true;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const checkSummary = async () => {
+      try {
+        const res = await fetchSummary(docId);
+        if (!isMounted) return;
+        if (res.summary_status === "completed" && res.summary) {
+          setSummary(res.summary);
+        } else if (res.summary_status === "failed") {
+          setSummary("Summary is unavailable for this document.");
+        } else {
+          // Still generating or pending, poll again in 3 seconds
+          timer = setTimeout(checkSummary, 3000);
+        }
+      } catch {
+        if (isMounted) {
+          timer = setTimeout(checkSummary, 4000);
+        }
+      }
+    };
+
+    checkSummary();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [docId, summary]);
+
   // Subscribe to SSE stage events and drive the stage UI.
   const runProcessing = useCallback((newDocId: string) => {
     setStages(INITIAL_STAGES.map((s) => ({ ...s })));
@@ -59,7 +94,9 @@ export function usePdfRag() {
       // Summary lands independently → fetch and show it.
       if (key === "summarizing" && e.status === "completed") {
         fetchSummary(newDocId)
-          .then((r) => setSummary(r.summary))
+          .then((r) => {
+            if (r.summary) setSummary(r.summary);
+          })
           .catch(() => {});
       }
     });

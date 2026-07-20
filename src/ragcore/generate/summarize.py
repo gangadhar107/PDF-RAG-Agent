@@ -12,6 +12,7 @@ Non-load-bearing (Option B): a failure sets summary_status='failed' but never bl
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import re
 import uuid
 from pathlib import Path
@@ -72,9 +73,15 @@ def summarize_document(doc_id: uuid.UUID, markdown: str,
         windows = _coarse_windows(markdown)[:max_windows]
 
         # MAP
-        window_summaries = []
-        for w in windows:
-            window_summaries.append(generate(_MAP_PROMPT, w, temperature=0.0, max_tokens=800))
+        def _map_window(arg: tuple[int, str]) -> tuple[int, str]:
+            idx, w = arg
+            res = generate(_MAP_PROMPT, w, temperature=0.0, max_tokens=800)
+            return idx, res
+
+        window_summaries = [""] * len(windows)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            for idx, res in executor.map(_map_window, enumerate(windows)):
+                window_summaries[idx] = res
 
         # REDUCE
         joined = "\n\n".join(f"- {ws}" for ws in window_summaries)
