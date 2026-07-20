@@ -42,7 +42,7 @@ class QuotaExhaustedError(Exception):
 
 
 @retry(
-    retry=retry_if_exception_type(genai_errors.ClientError),
+    retry=retry_if_exception_type(Exception),
     stop=stop_after_attempt(5),
     wait=wait_random_exponential(min=2, max=60),
     reraise=True,
@@ -64,7 +64,7 @@ def embed_one(text: str, task_type: str) -> list[float]:
     """Embed a single text → 1536-dim vector. One text per call (model joins lists)."""
     try:
         return _embed_call(text, task_type)
-    except genai_errors.ClientError as e:
+    except Exception as e:
         if getattr(e, "code", None) == 429 or "RESOURCE_EXHAUSTED" in str(e):
             raise QuotaExhaustedError(
                 f"Gemini embedding rate/quota limit reached (429). Details: {e}"
@@ -78,7 +78,7 @@ def embed_query(question: str) -> list[float]:
 
 
 @retry(
-    retry=retry_if_exception_type(genai_errors.ClientError),
+    retry=retry_if_exception_type(Exception),
     stop=stop_after_attempt(5),
     wait=wait_exponential(min=2, max=60),
     reraise=True,
@@ -100,7 +100,7 @@ def generate(system: str, user: str, *, temperature: float = 0.0,
 
 
 @retry(
-    retry=retry_if_exception_type(genai_errors.ClientError),
+    retry=retry_if_exception_type(Exception),
     stop=stop_after_attempt(5),
     wait=wait_exponential(min=2, max=60),
     reraise=True,
